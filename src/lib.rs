@@ -125,7 +125,6 @@
 //! breaking change and may occur in patch version releases.
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(not(test), no_std)]
-#![deny(missing_docs)]
 #![cfg_attr(
     all(
         feature = "nightly",
@@ -145,12 +144,14 @@
     clippy::semicolon_if_nothing_returned,
     clippy::if_not_else
 )]
+#![feature(ptr_metadata, layout_for_ptr)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
 pub use binary_heap::BinaryHeap;
 pub use c_string::CString;
+use core::alloc::Layout;
 pub use deque::Deque;
 pub use history_buf::{HistoryBuf, OldestOrdered};
 pub use index_map::IndexMap;
@@ -252,3 +253,9 @@ impl core::fmt::Display for CapacityError {
 }
 
 impl core::error::Error for CapacityError {}
+
+pub unsafe trait BuilderInPlace {
+    type Output: ?Sized;
+    fn layout(&self) -> Layout;
+    unsafe fn build(self, ptr: *mut ()) -> *mut Self::Output;
+}
