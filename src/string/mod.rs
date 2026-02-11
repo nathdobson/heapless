@@ -12,14 +12,11 @@ use core::{
     ptr,
     str::{self, Utf8Error},
 };
+use core::ptr::null;
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
-use crate::{
-    len_type::LenType,
-    vec::{OwnedVecStorage, Vec, VecInner, ViewVecStorage},
-    BuilderInPlace, CapacityError,
-};
+use crate::{len_type::LenType, vec::{OwnedVecStorage, Vec, VecInner, ViewVecStorage}, BuilderInPlace, CapacityError};
 
 mod drain;
 pub use drain::Drain;
@@ -1120,7 +1117,7 @@ unsafe impl BuilderInPlace for StringInPlace {
     type Output = StringView;
 
     fn layout(&self) -> Layout {
-        Layout::from_size_align(self.0, 1).unwrap()
+        unsafe { Layout::for_value_raw(ptr::from_raw_parts::<StringView>(null::<()>(), self.0)) }
     }
 
     unsafe fn build(self, p: *mut ()) -> *mut Self::Output {
