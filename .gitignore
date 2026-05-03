@@ -3,3 +3,5 @@
 Cargo.lock
 target/
 rustc-ice-*.txt
+# IDE files
+.idea
