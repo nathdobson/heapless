@@ -11,12 +11,13 @@ use core::{
     ptr::{self, NonNull},
     slice,
 };
-
+use core::alloc::Layout;
+use core::ptr::null;
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
 use crate::{
-    len_type::{check_capacity_fits, to_len_type, LenType},
+    len_type::{check_capacity_fits, LenType},
     BuilderInPlace, CapacityError,
 };
 
@@ -1799,6 +1800,28 @@ where
 {
     fn clone(&self) -> Self {
         self.clone()
+    }
+}
+
+pub struct VecInPlace<T>(usize, PhantomData<T>);
+
+impl<T> VecInPlace<T> {
+    pub fn new(cap: usize) -> Self {
+        VecInPlace(cap, PhantomData)
+    }
+}
+
+unsafe impl<T> BuilderInPlace for VecInPlace<T> {
+    type Output = VecView<T>;
+
+    fn layout(&self) -> Layout {
+        unsafe { Layout::for_value_raw(ptr::from_raw_parts::<VecView<T>>(null::<()>(), self.0)) }
+    }
+
+    unsafe fn build(self, p: *mut ()) -> *mut Self::Output {
+        let result: *mut Self::Output = ptr::from_raw_parts_mut(p as *mut u8, self.0);
+        (*result).len = 0;
+        result
     }
 }
 
