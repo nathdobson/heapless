@@ -621,20 +621,6 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
         self.truncate(0);
     }
 
-    /// Extends the vec from an iterator.
-    ///
-    /// # Panic
-    ///
-    /// Panics if the vec cannot hold all elements of the iterator.
-    pub fn extend<I>(&mut self, iter: I)
-    where
-        I: IntoIterator<Item = T>,
-    {
-        for elem in iter {
-            self.push(elem).ok().unwrap();
-        }
-    }
-
     /// Clones and appends all elements in a slice to the `Vec`.
     ///
     /// Iterates over the slice `other`, clones each element, and then appends
@@ -1400,27 +1386,6 @@ impl<'a, T: Clone, LenT: LenType, const N: usize> TryFrom<&'a [T]> for Vec<T, N,
     }
 }
 
-impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> Extend<T> for VecInner<T, LenT, S> {
-    fn extend<I>(&mut self, iter: I)
-    where
-        I: IntoIterator<Item = T>,
-    {
-        self.extend(iter);
-    }
-}
-
-impl<'a, T, LenT: LenType, S: VecStorage<T> + ?Sized> Extend<&'a T> for VecInner<T, LenT, S>
-where
-    T: 'a + Copy,
-{
-    fn extend<I>(&mut self, iter: I)
-    where
-        I: IntoIterator<Item = &'a T>,
-    {
-        self.extend(iter.into_iter().cloned());
-    }
-}
-
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> hash::Hash for VecInner<T, LenT, S>
 where
     T: core::hash::Hash,
@@ -1447,19 +1412,6 @@ impl<'a, T, LenT: LenType, S: VecStorage<T> + ?Sized> IntoIterator
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter_mut()
-    }
-}
-
-impl<T, LenT: LenType, const N: usize> FromIterator<T> for Vec<T, N, LenT> {
-    fn from_iter<I>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = T>,
-    {
-        let mut vec = Self::new();
-        for i in iter {
-            vec.push(i).ok().expect("Vec::from_iter overflow");
-        }
-        vec
     }
 }
 

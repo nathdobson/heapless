@@ -144,6 +144,7 @@
     clippy::semicolon_if_nothing_returned,
     clippy::if_not_else
 )]
+#![deny(unconditional_recursion, unused_must_use)]
 #![allow(dead_code)]
 #![feature(ptr_metadata, layout_for_ptr)]
 

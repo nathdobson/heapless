@@ -577,20 +577,6 @@ where
     }
 }
 
-impl<K, V, const N: usize> FromIterator<(K, V)> for LinearMap<K, V, N>
-where
-    K: Eq,
-{
-    fn from_iter<I>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = (K, V)>,
-    {
-        let mut out = Self::new();
-        out.buffer.extend(iter);
-        out
-    }
-}
-
 /// An iterator that moves out of a [`LinearMap`].
 ///
 /// This struct is created by calling the [`into_iter`](LinearMap::into_iter) method on

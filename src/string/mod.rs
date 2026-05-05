@@ -1,22 +1,26 @@
 //! A fixed capacity [`String`](https://doc.rust-lang.org/std/string/struct.String.html).
 
 use core::alloc::Layout;
+use core::ptr::null;
 use core::{
     borrow,
     char::DecodeUtf16Error,
     cmp::Ordering,
     fmt,
     fmt::{Arguments, Write},
-    hash, iter,
+    hash,
     ops::{self, Range, RangeBounds},
     ptr,
     str::{self, Utf8Error},
 };
-use core::ptr::null;
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
-use crate::{len_type::LenType, vec::{OwnedVecStorage, Vec, VecInner, ViewVecStorage}, BuilderInPlace, CapacityError};
+use crate::{
+    len_type::LenType,
+    vec::{OwnedVecStorage, Vec, VecInner, ViewVecStorage},
+    BuilderInPlace, CapacityError,
+};
 
 mod drain;
 pub use drain::Drain;
@@ -833,36 +837,6 @@ impl<LenT: LenType, const N: usize> str::FromStr for String<N, LenT> {
         let mut new = Self::new();
         new.push_str(s)?;
         Ok(new)
-    }
-}
-
-impl<LenT: LenType, const N: usize> iter::FromIterator<char> for String<N, LenT> {
-    fn from_iter<T: IntoIterator<Item = char>>(iter: T) -> Self {
-        let mut new = Self::new();
-        for c in iter {
-            new.push(c).unwrap();
-        }
-        new
-    }
-}
-
-impl<'a, LenT: LenType, const N: usize> iter::FromIterator<&'a char> for String<N, LenT> {
-    fn from_iter<T: IntoIterator<Item = &'a char>>(iter: T) -> Self {
-        let mut new = Self::new();
-        for c in iter {
-            new.push(*c).unwrap();
-        }
-        new
-    }
-}
-
-impl<'a, LenT: LenType, const N: usize> iter::FromIterator<&'a str> for String<N, LenT> {
-    fn from_iter<T: IntoIterator<Item = &'a str>>(iter: T) -> Self {
-        let mut new = Self::new();
-        for c in iter {
-            new.push_str(c).unwrap();
-        }
-        new
     }
 }
 
