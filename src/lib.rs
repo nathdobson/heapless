@@ -146,14 +146,12 @@
 )]
 #![deny(unconditional_recursion, unused_must_use)]
 #![allow(dead_code)]
-#![feature(ptr_metadata, layout_for_ptr)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
 pub use binary_heap::BinaryHeap;
 pub use c_string::CString;
-use core::alloc::Layout;
 pub use deque::Deque;
 pub use history_buf::{HistoryBuf, OldestOrdered};
 pub use index_map::IndexMap;
@@ -255,9 +253,3 @@ impl core::fmt::Display for CapacityError {
 }
 
 impl core::error::Error for CapacityError {}
-
-pub unsafe trait BuilderInPlace {
-    type Output: ?Sized;
-    fn layout(&self) -> Layout;
-    unsafe fn build(self, ptr: *mut ()) -> *mut Self::Output;
-}

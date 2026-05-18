@@ -1,7 +1,5 @@
 //! A fixed capacity [`String`](https://doc.rust-lang.org/std/string/struct.String.html).
 
-use core::alloc::Layout;
-use core::ptr::null;
 use core::{
     borrow,
     char::DecodeUtf16Error,
@@ -10,7 +8,6 @@ use core::{
     fmt::{Arguments, Write},
     hash,
     ops::{self, Range, RangeBounds},
-    ptr,
     str::{self, Utf8Error},
 };
 #[cfg(feature = "zeroize")]
@@ -19,7 +16,7 @@ use zeroize::Zeroize;
 use crate::{
     len_type::LenType,
     vec::{OwnedVecStorage, Vec, VecInner, ViewVecStorage},
-    BuilderInPlace, CapacityError,
+    CapacityError,
 };
 
 mod drain;
@@ -138,7 +135,6 @@ mod storage {
     }
 }
 
-use crate::vec::VecInPlace;
 pub use storage::StringStorage;
 
 /// Implementation of [`StringStorage`] that stores the data in an array whose size is known at
@@ -589,6 +585,10 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
             assert!(self.is_char_boundary(new_len));
             self.vec.truncate(new_len);
         }
+    }
+
+    pub unsafe fn set_len(&mut self, new_len: usize) {
+        self.vec.set_len(new_len);
     }
 
     /// Removes the last character from the string buffer and returns it.
@@ -1079,27 +1079,6 @@ impl_try_from_num!(u8, 3);
 impl_try_from_num!(u16, 5);
 impl_try_from_num!(u32, 10);
 impl_try_from_num!(u64, 20);
-
-pub struct StringInPlace(usize);
-impl StringInPlace {
-    pub fn new(cap: usize) -> Self {
-        StringInPlace(cap)
-    }
-}
-
-unsafe impl BuilderInPlace for StringInPlace {
-    type Output = StringView;
-
-    fn layout(&self) -> Layout {
-        unsafe { Layout::for_value_raw(ptr::from_raw_parts::<StringView>(null::<()>(), self.0)) }
-    }
-
-    unsafe fn build(self, p: *mut ()) -> *mut Self::Output {
-        let result: *mut Self::Output = ptr::from_raw_parts_mut(p as *mut u8, self.0);
-        VecInPlace::<u8>::new(self.0).build((&raw mut (*result).vec) as *mut ());
-        result
-    }
-}
 
 #[cfg(test)]
 mod tests {
